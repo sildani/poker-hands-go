@@ -92,4 +92,24 @@ A main program will have a simple workflow using the packages provided:
 
 ## Implementation notes
 
+### I'm new
+
 I've been coding in Go for about five days now, so it's still very early for me. My initial implementations will likely be terrible. I just want to have a fun problem to solve to further push my learning. I will tag "releases" as I evolve the program to tie back revisions to my evolution within the language.
+
+### The "calc stats then derrive meaning" tact
+
+As I thought about the implementation, I wanted it to be extremely light. Could I make one pass over the cards and glean enough information via stats to derrive the nature of the hand? Here are some ideas:
+
+- Split the card into two parts - its value, and its suit
+- Count the values, count the suits
+- Straight Flush will have a delta of five between high and low card, and one single suit count of five (this can only be true for consecutive values)
+- Four of a kind will have a single value count of four
+- Full House will have one value count of three, and another value count of two
+- Flush will have a delta greater than five between high and low card, and one single suit count of five
+- Straight will have a delta of five between high and low card, but have at least two distinct suit counts
+- Three of a kind will have a single value count of three
+- Two Pairs will have two distinct value counts of two each
+- One Pair will have one value count of two
+- High Card when none of the other rules apply - highest card value applies
+
+For scoring, I will keep the rule set in the evaluator, and each eval will have five "scores" sorted from highest value to lowest value, so that starting at index 0, the highest score wins (in case of tie, go to next score). This will be stored in the Evaluation package, as it will be evaluating hands and assigning scores.
