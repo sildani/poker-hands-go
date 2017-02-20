@@ -18,6 +18,13 @@ var valueConversion map[string]int = map[string]int{
 	"9": 9, "T": 10, "J": 11, "Q": 12, "K": 13, "A": 14,
 }
 
+func IsCardSuitValid(s string) bool {
+	return s == "D" ||
+		s == "H" ||
+		s == "S" ||
+		s == "C"
+}
+
 func ParseCardValue(s string) (int, error) {
 	value := valueConversion[s]
 
@@ -35,6 +42,8 @@ func ParseHand(hand string) ([]string, error) {
 		return []string{""}, errors.New("Invalid hand: must have five cards")
 	}
 
+	cardsSeen := make(map[string]int)
+
 	for _, card := range parsedHand {
 		isCardValid := false
 		for _, validCard := range cards {
@@ -46,6 +55,11 @@ func ParseHand(hand string) ([]string, error) {
 		}
 		if !isCardValid {
 			return []string{""}, fmt.Errorf("Invalid hand: contains invalid card")
+		}
+		if cardsSeen[card] != 0 {
+			return []string{""}, fmt.Errorf("Invalid hand: contains duplicate card")
+		} else {
+			cardsSeen[card] += 1
 		}
 	}
 

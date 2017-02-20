@@ -4,7 +4,34 @@ import (
 	"testing"
 )
 
-func TestParseCardValueInvalidCard(t *testing.T) {
+func TestIsValidCardSuit(t *testing.T) {
+	var tests = []struct {
+		suit             string
+		expectedValidity bool
+	}{
+		{"", false},
+		{"D", true},
+		{"H", true},
+		{"S", true},
+		{"C", true},
+		{"A", false},
+		{"G", false},
+		{"ZZ", false},
+		{"Diamonds", false},
+		{"Hearts", false},
+		{"Spade", false},
+		{"Club", false},
+	}
+
+	for _, test := range tests {
+		validity := IsCardSuitValid(test.suit)
+		if validity != test.expectedValidity {
+			t.Errorf("IsCardSuitValid(%q) == %t but expected %t", test.suit, validity, test.expectedValidity)
+		}
+	}
+}
+
+func TestParseCardValueInvalidCardValue(t *testing.T) {
 	var tests = []struct {
 		value               string
 		expectedParsedValue int
@@ -19,7 +46,7 @@ func TestParseCardValueInvalidCard(t *testing.T) {
 	for _, test := range tests {
 		parsedValue, err := ParseCardValue(test.value)
 		if err == nil {
-			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.value, err)
+			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.value, test.expectedErr)
 		} else {
 			if err.Error() != test.expectedErr {
 				t.Errorf("ParseCardValue(%q) err == %q but expected %q", test.value, err, test.expectedErr)
@@ -32,7 +59,7 @@ func TestParseCardValueInvalidCard(t *testing.T) {
 	}
 }
 
-func TestParseCardValueValidCard(t *testing.T) {
+func TestParseCardValueValidCardValue(t *testing.T) {
 	var tests = []struct {
 		value               string
 		expectedParsedValue int
@@ -84,7 +111,7 @@ func TestParseHandInvalidHandMissingCards(t *testing.T) {
 	for _, test := range tests {
 		parsedHand, err := ParseHand(test.hand)
 		if err == nil {
-			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.hand, err)
+			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.hand, test.expectedErr)
 		} else {
 			if err.Error() != test.expectedErr {
 				t.Errorf("ParseHand(%q) err == %q but expected %q", test.hand, err, test.expectedErr)
@@ -113,7 +140,34 @@ func TestParseHandInvalidHandInvalidCard(t *testing.T) {
 	for _, test := range tests {
 		parsedHand, err := ParseHand(test.hand)
 		if err == nil {
-			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.hand, err)
+			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.hand, test.expectedErr)
+		} else {
+			if err.Error() != test.expectedErr {
+				t.Errorf("ParseHand(%q) err == %q but expected %q", test.hand, err, test.expectedErr)
+			}
+		}
+		if parsedHand[0] != test.expectedParsedHand[0] ||
+			len(parsedHand) != len(test.expectedParsedHand) {
+			t.Errorf("ParseHand(%q) == %q but expected %q",
+				test.hand, parsedHand, test.expectedParsedHand)
+		}
+	}
+}
+
+func TestParseHandInvalidHandDuplicateCard(t *testing.T) {
+	var tests = []struct {
+		hand               string
+		expectedParsedHand []string
+		expectedErr        string
+	}{
+		{"2H 2H 4C 2D 4P", []string{""}, "Invalid hand: contains duplicate card"},
+		{"5H 4S 4C 2D 2D", []string{""}, "Invalid hand: contains duplicate card"},
+	}
+
+	for _, test := range tests {
+		parsedHand, err := ParseHand(test.hand)
+		if err == nil {
+			t.Errorf("ParseCardValue(%q) err == nil but expected %q", test.hand, test.expectedErr)
 		} else {
 			if err.Error() != test.expectedErr {
 				t.Errorf("ParseHand(%q) err == %q but expected %q", test.hand, err, test.expectedErr)
