@@ -102,7 +102,7 @@ As I thought about the implementation, I wanted it to be extremely light. Could 
 
 - Split the card into two parts - its value, and its suit
 - Count the values, count the suits
-- Straight Flush will have a delta of five between high and low card, and one single suit count of five (this can only be true for consecutive values)
+- Straight Flush will have a delta of five between high and low card, and one single suit count of four (this can only be true for consecutive values)
 - Four of a kind will have a single value count of four
 - Full House will have one value count of three, and another value count of two
 - Flush will have a delta greater than five between high and low card, and one single suit count of five
