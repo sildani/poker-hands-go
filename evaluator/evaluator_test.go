@@ -38,7 +38,10 @@ func TestEvaluateParsedHand(t *testing.T) {
 					description string
 				}{
 					{802, "Four of a kind, High Card: 2"},
-					{106, "High Card: 5"},
+					{106, "High Card: 6"},
+					{106, "High Card: 6"},
+					{106, "High Card: 6"},
+					{106, "High Card: 6"},
 				},
 			},
 		},
@@ -176,6 +179,7 @@ func TestIsStraightFlush(t *testing.T) {
 		expectedResult bool
 	}{
 		{
+			// 2D 3D 4D 5D 6D
 			Stats{
 				suits:  map[string]int{"D": 5},
 				values: map[int]int{2: 1, 3: 1, 4: 1, 5: 1, 6: 1},
@@ -183,6 +187,7 @@ func TestIsStraightFlush(t *testing.T) {
 			true,
 		},
 		{
+			// TH JH QH KH AH
 			Stats{
 				suits:  map[string]int{"H": 5},
 				values: map[int]int{14: 1, 13: 1, 12: 1, 11: 1, 10: 1},
@@ -190,6 +195,16 @@ func TestIsStraightFlush(t *testing.T) {
 			true,
 		},
 		{
+			// TH JH QH KH AH
+			// Stats ordering shouldn't matter
+			Stats{
+				suits:  map[string]int{"H": 5},
+				values: map[int]int{12: 1, 11: 1, 10: 1, 14: 1, 13: 1},
+			},
+			true,
+		},
+		{
+			// TH JH QH KD AH
 			Stats{
 				suits:  map[string]int{"H": 4, "D": 1},
 				values: map[int]int{14: 1, 13: 1, 12: 1, 11: 1, 10: 1},
@@ -197,8 +212,8 @@ func TestIsStraightFlush(t *testing.T) {
 			false,
 		},
 		{
+			// AD AH QS JS TC
 			Stats{
-				// AD AH QS JS TC
 				suits:  map[string]int{"H": 1, "D": 1, "C": 1, "S": 2},
 				values: map[int]int{14: 2, 12: 1, 11: 1, 10: 1},
 			},
@@ -212,5 +227,92 @@ func TestIsStraightFlush(t *testing.T) {
 			t.Errorf("isStraightFlush(%v) == %t but expected %t", test.stats, result, test.expectedResult)
 		}
 	}
-
 }
+
+func TestIsFourOfAKind(t *testing.T) {
+	tests := []struct {
+		stats          Stats
+		expectedResult bool
+	}{
+		{
+			// 2C 2D 2H 2S 3S
+			Stats{
+				suits:  map[string]int{"C": 1, "D": 1, "H": 1, "S": 2},
+				values: map[int]int{2: 4, 3: 1},
+			},
+			true,
+		},
+		{
+			// TC TD KD TH TS
+			Stats{
+				suits:  map[string]int{"C": 1, "D": 2, "H": 1, "S": 1},
+				values: map[int]int{10: 4, 13: 1},
+			},
+			true,
+		},
+		{
+			// TC TD KD TH TS
+			// Stats ordering shouldn't matter
+			Stats{
+				suits:  map[string]int{"D": 2, "C": 1, "H": 1, "S": 1},
+				values: map[int]int{13: 1, 10: 4},
+			},
+			true,
+		},
+		{
+			// TH JH QH KD AH
+			Stats{
+				suits:  map[string]int{"H": 4, "D": 1},
+				values: map[int]int{14: 1, 13: 1, 12: 1, 11: 1, 10: 1},
+			},
+			false,
+		},
+		{
+			// AD AH QS JS TC
+			Stats{
+				suits:  map[string]int{"H": 1, "D": 1, "C": 1, "S": 2},
+				values: map[int]int{14: 2, 12: 1, 11: 1, 10: 1},
+			},
+			false,
+		},
+	}
+
+	for _, test := range tests {
+		result := isFourOfAKind(test.stats)
+		if result != test.expectedResult {
+			t.Errorf("isFourOfAKind(%v) == %t but expected %t", test.stats, result, test.expectedResult)
+		}
+	}
+}
+
+// TODO: Full House: 3 cards of the same value, with the remaining 2
+// cards forming a pair. Ranked by the value of the 3 cards.
+
+// TODO: Flush: Hand contains 5 cards of the same suit. Hands which
+// are both flushes are ranked using the rules for High Card.
+
+// TODO: Straight: Hand contains 5 cards with consecutive values.
+// Hands which both contain a straight are ranked by their
+// highest card.
+
+// TODO: Three of a Kind: Three of the cards in the hand have the
+// same value. Hands which both contain three of a kind are
+// ranked by the value of the 3 cards.
+
+// TODO: Two Pairs: The hand contains 2 different pairs. Hands
+// which both contain 2 pairs are ranked by the value of
+// their highest pair. Hands with the same highest pair
+// are ranked by the value of their other pair. If these
+// values are the same the hands are ranked by the value
+// of the remaining card.
+
+// TODO: Pair: 2 of the 5 cards in the hand have the same value.
+// Hands which both contain a pair are ranked by the value of
+// the cards forming the pair. If these values are the same,
+// the hands are ranked by the values of the cards not
+// forming the pair, in decreasing order.
+
+// TODO: High Card: Hands which do not fit any higher category are
+// ranked by the value of their highest card. If the highest
+// cards have the same value, the hands are ranked by the next
+// highest, and so on.

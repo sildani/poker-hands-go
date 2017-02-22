@@ -9,6 +9,8 @@ import (
 )
 
 const straightFlushBaseScore = 900
+const fourOfAKindBaseScore = 800
+const highCardBaseScore = 100
 
 type Stats struct {
 	suits  map[string]int
@@ -26,9 +28,15 @@ type Evaluation struct {
 func EvaluateParsedHand(parsedHand []string) Evaluation {
 	stats, _ := gatherStats(parsedHand)
 
-	var result [5]struct {
+	result := [5]struct {
 		score       int
 		description string
+	}{
+		{score: 0, description: ""},
+		{score: 0, description: ""},
+		{score: 0, description: ""},
+		{score: 0, description: ""},
+		{score: 0, description: ""},
 	}
 
 	if isStraightFlush(stats) {
@@ -49,9 +57,27 @@ func EvaluateParsedHand(parsedHand []string) Evaluation {
 				description: "Straight Flush, High Card: " + strconv.Itoa(value),
 			}
 		}
-		return Evaluation{
-			hand:   strings.Join(parsedHand, " "),
-			result: result,
+	} else if isFourOfAKind(stats) {
+		for value, count := range stats.values {
+			if count == 4 {
+				result[0] = struct {
+					score       int
+					description string
+				}{
+					score:       fourOfAKindBaseScore + value,
+					description: "Four of a kind, High Card: " + strconv.Itoa(value),
+				}
+			} else {
+				for i := 1; i < 5; i++ {
+					result[i] = struct {
+						score       int
+						description string
+					}{
+						score:       highCardBaseScore + value,
+						description: "High Card: " + strconv.Itoa(value),
+					}
+				}
+			}
 		}
 	}
 
@@ -100,4 +126,8 @@ func isStraightFlush(stats Stats) bool {
 	}
 	sort.Ints(values)
 	return values[len(values)-1]-values[0] == 4 && len(stats.suits) == 1
+}
+
+func isFourOfAKind(stats Stats) bool {
+	return len(stats.suits) == 4 && len(stats.values) == 2
 }
